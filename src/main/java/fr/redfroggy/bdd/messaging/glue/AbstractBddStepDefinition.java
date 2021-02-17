@@ -293,7 +293,7 @@ abstract class AbstractBddStepDefinition {
             scopeValue = scenarioScope.getJsonPaths().get(property);
         }
 
-        if (!CollectionUtils.isEmpty(scenarioScope.getHeaders())) {
+        if (scopeValue == null && !CollectionUtils.isEmpty(scenarioScope.getHeaders())) {
             scopeValue = scenarioScope.getHeaders().get(property);
         }
 
