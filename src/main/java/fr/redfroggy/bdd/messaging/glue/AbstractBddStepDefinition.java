@@ -1,7 +1,6 @@
 package fr.redfroggy.bdd.messaging.glue;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
@@ -219,15 +218,11 @@ abstract class AbstractBddStepDefinition {
      */
     private void checkJsonValue(Collection pathValue, String jsonValue, boolean isNot) {
         assertThat(pathValue).isNotEmpty();
-        Object jsonValueToEvaluate = jsonValue;
-        if (pathValue.iterator().next() instanceof Boolean) {
-            jsonValueToEvaluate = Boolean.valueOf(jsonValue);
-        }
 
         if (!isNot) {
-            assertThat(pathValue).contains(jsonValueToEvaluate);
+            assertThat(pathValue).isEqualTo(JsonPath.parse(jsonValue).json());
         } else {
-            assertThat(pathValue).doesNotContain(jsonValueToEvaluate);
+            assertThat(pathValue).isNotEqualTo(JsonPath.parse(jsonValue).json());
         }
     }
 

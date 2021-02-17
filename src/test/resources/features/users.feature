@@ -20,6 +20,7 @@ Feature: Users messaging tests
     And message body path $.age should be 50
     And message body is typed as array for path $.sessionIds
     And message body is typed as array using path $.sessionIds with length 2
+    And message body path $.sessionIds should be ["43233333", "45654345"]
     And message header contentType should not be application/xml
     And message header X_TOKEN_ID should exist
     And message header X_TOKEN_ID should be 1234
