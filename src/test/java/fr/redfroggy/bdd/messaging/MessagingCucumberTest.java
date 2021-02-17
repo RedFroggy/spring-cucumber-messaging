@@ -1,4 +1,4 @@
-package fr.redfroggy.bdd.messaging.cucumber;
+package fr.redfroggy.bdd.messaging;
 
 import io.cucumber.junit.Cucumber;
 import io.cucumber.junit.CucumberOptions;

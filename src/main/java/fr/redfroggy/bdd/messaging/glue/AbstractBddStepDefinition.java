@@ -1,15 +1,17 @@
 package fr.redfroggy.bdd.messaging.glue;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.ReadContext;
+import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import fr.redfroggy.bdd.messaging.scope.ScenarioScope;
 import org.junit.Assert;
 import org.springframework.cloud.stream.test.binder.MessageCollector;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.CollectionUtils;
@@ -40,11 +42,11 @@ abstract class AbstractBddStepDefinition {
     // Messaging objects
     private Message<?> message;
     BlockingQueue<Message<?>> messages;
-    private final MessageHeaders headers;
+    private final Map<String, Object> headers;
     private final MessageCollector collector;
     private final List<MessageChannel> channels;
 
-    private final ObjectMapper objectMapper;
+    private final Configuration jsonPathConfiguration;
 
     private static final ScenarioScope scenarioScope = new ScenarioScope();
 
@@ -52,20 +54,18 @@ abstract class AbstractBddStepDefinition {
         this.collector = collector;
         this.channels = channels;
 
-        headers = new MessageHeaders(new HashMap<>());
-        objectMapper = new ObjectMapper();
+        headers = new HashMap<>();
+
+        JacksonJsonProvider jsonProvider = new JacksonJsonProvider();
+        jsonProvider.getObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        jsonPathConfiguration = Configuration.builder().jsonProvider(jsonProvider).build();
     }
 
     void setHeader(String name, String value) {
         assertThat(name).isNotNull();
         assertThat(value).isNotNull();
-        value = replaceDynamicParameters(value);
-        headers.put(name, value);
-    }
-
-    void addHeaders(Map<String, String> newHeaders) {
-        assertThat(newHeaders).isNotEmpty();
-        headers.putAll(newHeaders);
+        value = replaceDynamicParameters(value, false);
+        headers.put(name.trim(), value.trim());
     }
 
     /**
@@ -77,14 +77,14 @@ abstract class AbstractBddStepDefinition {
         // verify json is valid
         assertThat(JsonPath.parse(body)).isNotNull();
 
-        this.body = replaceDynamicParameters(body);
+        this.body = replaceDynamicParameters(body, true);
     }
 
-    boolean pushToQueue(String channelName) {
+    void pushToQueue(String channelName) {
         MessageChannel channel = getChannelByName(channelName);
         Assert.assertNotNull(channel);
 
-        return channel.send(new GenericMessage<>(body));
+        channel.send(new GenericMessage<>(body, headers));
     }
 
     void readMessageFromQueue(String channelName, MessageChannelAction action) throws InterruptedException {
@@ -93,17 +93,13 @@ abstract class AbstractBddStepDefinition {
 
         messages = collector.forChannel(channel);
         assertThat(messages).isNotNull();
-        assertThat(messages).isNotEmpty();
 
-        switch (action) {
-            case POLL:
+        if(!messages.isEmpty()) {
+            if (action == MessageChannelAction.POLL) {
                 message = messages.poll();
-                break;
-            case TAKE:
-                message = messages.take();
-                break;
-            default:
+            } else {
                 message = messages.element();
+            }
         }
     }
 
@@ -129,18 +125,16 @@ abstract class AbstractBddStepDefinition {
 
     void checkHeaderHasValue(String headerName, String headerValue, boolean isNot) {
         assertThat(headerName).isNotEmpty();
-
         assertThat(headerValue).isNotEmpty();
-
         assertThat(message.getHeaders()).isNotNull();
 
-        String header = String.valueOf(message.getHeaders().get(headerName));
+        Object header = message.getHeaders().get(headerName.trim());
         assertThat(header).isNotNull();
 
         if (!isNot) {
-            assertThat(header).contains(headerValue);
+            assertThat(String.valueOf(header)).contains(headerValue.trim());
         } else {
-            assertThat(header).doesNotContain(headerValue);
+            assertThat(String.valueOf(header)).doesNotContain(headerValue.trim());
         }
     }
 
@@ -152,7 +146,8 @@ abstract class AbstractBddStepDefinition {
         assertThat(body).isNotEmpty();
 
         // Check body json structure is valid
-        objectMapper.readValue(body, Object.class);
+        ((JacksonJsonProvider) jsonPathConfiguration.jsonProvider())
+                .getObjectMapper().readValue(body, Object.class);
     }
 
     /**
@@ -298,9 +293,17 @@ abstract class AbstractBddStepDefinition {
      *            expected value
      */
     void checkScenarioVariable(String property, String value) {
+        Object scopeValue = null;
         if (!CollectionUtils.isEmpty(scenarioScope.getJsonPaths())) {
-            Assert.assertEquals(scenarioScope.getJsonPaths().get(property), value);
+            scopeValue = scenarioScope.getJsonPaths().get(property);
         }
+
+        if (!CollectionUtils.isEmpty(scenarioScope.getHeaders())) {
+            scopeValue = scenarioScope.getHeaders().get(property);
+        }
+
+        Assert.assertNotNull(scopeValue);
+        Assert.assertEquals(scopeValue, value);
     }
 
     /**
@@ -309,7 +312,7 @@ abstract class AbstractBddStepDefinition {
      * @return ReadContext instance
      */
     private ReadContext readPayload() {
-        ReadContext ctx = JsonPath.parse(String.valueOf(message.getPayload()));
+        ReadContext ctx = JsonPath.parse(String.valueOf(message.getPayload()), jsonPathConfiguration);
         assertThat(ctx).isNotNull();
 
         return ctx;
@@ -338,13 +341,15 @@ abstract class AbstractBddStepDefinition {
         return pathValue;
     }
 
-    protected String replaceDynamicParameters(String value) {
+    protected String replaceDynamicParameters(String value, boolean jsonPath) {
         Pattern pattern = Pattern.compile("`\\${1}(.*?)`");
         Matcher matcher = pattern.matcher(value);
         if (matcher.find()) {
-            Object scopeValue = scenarioScope.getJsonPaths().get(matcher.group(1));
+            Object scopeValue = jsonPath ? scenarioScope.getJsonPaths().get(matcher.group(1))
+                    : scenarioScope.getHeaders().get(matcher.group(1));
             if (scopeValue != null) {
-                return replaceDynamicParameters(value.replace("`$"+ matcher.group(1) +"`", scopeValue.toString()));
+                return replaceDynamicParameters(value.replace("`$"+ matcher.group(1) +"`",
+                        scopeValue.toString()), jsonPath);
             }
         }
         return value;

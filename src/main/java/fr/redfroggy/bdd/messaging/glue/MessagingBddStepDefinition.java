@@ -8,12 +8,7 @@ import org.springframework.cloud.stream.test.binder.MessageCollector;
 import org.springframework.messaging.MessageChannel;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 
 public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
 
@@ -27,7 +22,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
      * The body will be parsed to be sure the json is valid
      */
     @Given("^I set queue message body to (.*)$")
-    public void setBodyTo(String body) throws IOException {
+    public void setBodyTo(String body) {
         this.setBody(body);
     }
 
@@ -39,29 +34,22 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
         this.setHeader(headerName, headerValue);
     }
 
-    /**
-     * Add multiple headers
-     */
-    @Given("^I set headers to:$")
-    public void headers(Map<String, String> parameters) {
-        this.addHeaders(parameters);
-    }
-
     @When("^I PUSH to queue (.*)$")
     public void get(String channelName) {
-        boolean pushed = this.pushToQueue(channelName);
-        if (!pushed) {
-            fail("Could not push to queue: " + channelName);
-        }
+        this.pushToQueue(channelName);
     }
 
-    @When("^I (.*) first message from queue (.*)$")
-    public void pollFromQueue(String messageAction, String channelName) throws InterruptedException {
-        MessageChannelAction channelAction = MessageChannelAction.valueOf(messageAction.toUpperCase());
-        this.readMessageFromQueue(channelName, channelAction);
+    @When("^I POLL first message from queue (.*)$")
+    public void pollFromQueue(String channelName) throws InterruptedException {
+        this.readMessageFromQueue(channelName, MessageChannelAction.POLL);
     }
 
-    @Then("Queue should have (.*) messages$")
+    @When("^I PEEK first message from queue (.*)$")
+    public void peekFromQueue(String channelName) throws InterruptedException {
+        this.readMessageFromQueue(channelName, MessageChannelAction.PEEK);
+    }
+
+    @Then("^Queue should have (.*) messages left$")
     public void pollFromQueue(int expectedSize) {
         checkChannelHasSize(expectedSize);
     }
@@ -119,7 +107,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
     /**
      * Test the given json path query exists in the response body
      */
-    @Then("^message body path (.*) should exists$")
+    @Then("^message body path (.*) should exist$")
     public void bodyPathExists(String jsonPath) {
         this.checkJsonPathExists(jsonPath);
     }
@@ -138,17 +126,6 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
     @Then("^message body path (.*) should be (.*)$")
     public void bodyPathEqual(String jsonPath, String value) {
         this.checkJsonPath(jsonPath, value, false);
-    }
-
-    @Then("^message body path (.*) should not have content$")
-    public void emptyBodyPath(String jsonPath) {
-        Object json = getJsonPath(jsonPath);
-
-        if (json != null) {
-            if (json instanceof Collection<?>) {
-                assertThat(((Collection<?>) json).isEmpty()).isTrue();
-            }
-        }
     }
 
     /**

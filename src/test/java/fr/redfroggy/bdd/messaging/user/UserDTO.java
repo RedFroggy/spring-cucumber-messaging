@@ -1,5 +1,10 @@
 package fr.redfroggy.bdd.messaging.user;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import java.util.List;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public final class UserDTO extends PartialUserDTO {
 
     private String id;
@@ -11,6 +16,8 @@ public final class UserDTO extends PartialUserDTO {
     private UserDTO relatedTo;
 
     private String status;
+
+    private List<String> sessionIds;
 
     public String getId() {
         return id;
@@ -50,5 +57,13 @@ public final class UserDTO extends PartialUserDTO {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public List<String> getSessionIds() {
+        return sessionIds;
+    }
+
+    public void setSessionIds(List<String> sessionIds) {
+        this.sessionIds = sessionIds;
     }
 }

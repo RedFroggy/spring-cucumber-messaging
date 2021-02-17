@@ -6,7 +6,10 @@ import org.springframework.cloud.stream.annotation.Input;
 import org.springframework.cloud.stream.annotation.Output;
 import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.support.GenericMessage;
+
+import java.util.Map;
 
 @EnableBinding(UserStream.Process.class)
 public class UserStream {
@@ -18,14 +21,14 @@ public class UserStream {
     }
 
     @StreamListener(Process.INPUT_VALID_USER)
-    public void validUser(UserDTO user) {
+    public void validUser(UserDTO user, @Headers Map<String, Object> headers) {
         Assert.assertNotNull(user);
         boolean valid = user.getId() != null && user.getLastName() != null
                 && user.getFirstName() != null && user.getAge() > 0;
         user.setStatus(valid ? "VALID" : "INVALID");
 
         // send result to output queue
-        this.process.validUser().send(new GenericMessage<>(user));
+        this.process.validUser().send(new GenericMessage<>(user, headers));
     }
 
     public interface Process {
