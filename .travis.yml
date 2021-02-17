@@ -1,0 +1,36 @@
+# run a node.js script to use code from semantic-release
+after_success:
+  - semantic-release --prepare @conveyal/maven-semantic-release --publish @semantic-release/github,@conveyal/maven-semantic-release --verify-conditions @semantic-release/github,@conveyal/maven-semantic-release --verify-release @conveyal/maven-semantic-release --use-conveyal-workflow --disable-snapshot-skip-ci
+  # The following line is optional in maven-semantic-release projects.
+  # It is included here to test running code coverage reports as part of conveyal workflow.
+  # run codecov after semantic-release because maven-semantic-release creates extra commits that
+  # codecov will need a report on to reference in future PRs to the release branch
+  - bash <(curl -s https://codecov.io/bash)
+before_install: |
+  # only install signing keys under the same circumstances we do a mvn deploy later
+  if [[ "$TRAVIS_PULL_REQUEST" = false ]] && [[ "$TRAVIS_BRANCH" = master ]]; then
+    echo $GPG_SECRET_KEYS | base64 --decode | gpg --import --no-tty --batch
+  fi
+  nvm use 11
+# install dependencies used in after_success here because they don't get cached if called in after_success
+before_script:
+  # install node 12
+  - nvm install '12'
+  - nvm use 12
+  - yarn global add https://github.com/conveyal/maven-semantic-release.git#8eb976c8ec57b2fd1cee86f119f80ab1f8a38948 semantic-release
+cache:
+  directories:
+    - $HOME/.m2
+    - $HOME/.cache/yarn
+    # The following line is optional in maven-semantic-release projects.
+    # It is included here to cache libraries used to install the aws command line tool.
+    - $HOME/.cache/pip
+install: true
+jdk:
+  - openjdk11
+language: java
+notifications:
+  email: false
+script:
+  - mvn package
+os: linux
