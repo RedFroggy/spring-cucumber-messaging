@@ -28,9 +28,9 @@ Made with Spring, [Cucumber](https://cucumber.io/) and [Gherkin](https://cucumbe
 ## Installation
 ```xml
 <dependency>
-    <groupId>fr.redfroggy.test.bdd</groupId>
-    <artifactId>cucumber-messaging</artifactId>
-    <version>1.0.0</version>
+  <groupId>fr.redfroggy.test.bdd</groupId>
+  <artifactId>cucumber-messaging</artifactId>
+  <version>1.1.0</version>
 </dependency>
 ```
 Run `npm install` to add commitlint + husky
