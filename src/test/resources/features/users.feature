@@ -2,11 +2,11 @@
 Feature: Users messaging tests
 
   Background:
-    And I set contentType header to application/json
+    And I set contentType queue message header to application/json
 
   Scenario: Should valid user
     Given I set queue message body to {"id": "2","firstName":"Bruce","lastName":"Wayne","age":"50", "sessionIds": ["43233333", "45654345"]}
-    And I set X_TOKEN_ID header to 1234
+    And I set X_TOKEN_ID queue message header to 1234
     When I PUSH to queue input-valid-user
     And I POLL first message from queue output-valid-user
     Then message body should be valid json
@@ -24,13 +24,13 @@ Feature: Users messaging tests
     And message header contentType should not be application/xml
     And message header X_TOKEN_ID should exist
     And message header X_TOKEN_ID should be 1234
-    And I store the value of message header X_TOKEN_ID as tokenId in scenario scope
-    And I store the value of message path $.sessionIds.[0] as firstSessionId in scenario scope
+    And I store the value of queue message header X_TOKEN_ID as tokenId in scenario scope
+    And I store the value of queue message path $.sessionIds.[0] as firstSessionId in scenario scope
 
   Scenario: Should not be able to read multiple times from queue when polling
     Given I set queue message body to {"id": "2","firstName":"Bruce","lastName":"Wayne","age":"50"}
-    And value of scenario variable tokenId should be 1234
-    And I set  X_TOKEN_ID header to `$tokenId`
+    And queue value of scenario variable tokenId should be 1234
+    And I set  X_TOKEN_ID queue message header to `$tokenId`
     When I PUSH to queue input-valid-user
     And I POLL first message from queue output-valid-user
     Then message body path $.status should be VALID

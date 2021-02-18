@@ -29,7 +29,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
     /**
      * Add a new header
      */
-    @Given("^I set (.*) header to (.*)$")
+    @Given("^I set (.*) queue message header to (.*)$")
     public void header(String headerName, String headerValue) {
         this.setHeader(headerName, headerValue);
     }
@@ -160,7 +160,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
      *
      * @see ScenarioScope
      */
-    @Then("^I store the value of message header (.*) as (.*) in scenario scope$")
+    @Then("^I store the value of queue message header (.*) as (.*) in scenario scope$")
     public void storeResponseHeader(String headerName, String headerAlias) {
         this.storeHeader(headerName, headerAlias);
     }
@@ -172,7 +172,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
      *
      * @see ScenarioScope
      */
-    @Then("^I store the value of message path (.*) as (.*) in scenario scope$")
+    @Then("^I store the value of queue message path (.*) as (.*) in scenario scope$")
     public void storeResponseJsonPath(String jsonPath, String jsonPathAlias) {
         this.storeJsonPath(jsonPath, jsonPathAlias);
     }
@@ -181,7 +181,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
      * Test a scenario scope variable value match the expected one
      * @see ScenarioScope
      */
-    @Then("^value of scenario variable (.*) should be (.*)$")
+    @Then("^queue value of scenario variable (.*) should be (.*)$")
     public void scenarioVariableIsValid(String property, String value) {
         this.checkScenarioVariable(property, value);
     }
