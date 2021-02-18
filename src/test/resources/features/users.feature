@@ -21,6 +21,7 @@ Feature: Users messaging tests
     And queue message body is typed as array for path $.sessionIds
     And queue message body is typed as array using path $.sessionIds with length 2
     And queue message body path $.sessionIds should be ["43233333", "45654345"]
+    And queue message body path $.sessionIds should not be []
     And queue message header contentType should not be application/xml
     And queue message header X_TOKEN_ID should exist
     And queue message header X_TOKEN_ID should be 1234
@@ -28,13 +29,14 @@ Feature: Users messaging tests
     And I store the value of queue message path $.sessionIds.[0] as firstSessionId in scenario scope
 
   Scenario: Should not be able to read multiple times from queue when polling
-    Given I set queue message body to {"id": "2","firstName":"Bruce","lastName":"Wayne","age":"50"}
+    Given I set queue message body to {"id": "2","firstName":"Bruce","lastName":"Wayne","age":"50", "sessionIds": [`$firstSessionId`]}
     And queue value of scenario variable tokenId should be 1234
     And I set  X_TOKEN_ID queue message header to `$tokenId`
     When I PUSH to queue input-valid-user
     And I POLL first message from queue output-valid-user
     Then queue message body path $.status should be VALID
     And queue message header X_TOKEN_ID should be 1234
+    And queue value of scenario variable firstSessionId should be 43233333
     When I POLL first message from queue output-valid-user
     And Queue should have 0 messages left
 

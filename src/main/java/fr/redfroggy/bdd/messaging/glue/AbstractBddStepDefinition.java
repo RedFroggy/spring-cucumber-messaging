@@ -7,13 +7,11 @@ import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.ReadContext;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import fr.redfroggy.bdd.messaging.scope.ScenarioScope;
-import org.junit.Assert;
 import org.springframework.cloud.stream.test.binder.MessageCollector;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -73,22 +71,24 @@ abstract class AbstractBddStepDefinition {
     void setBody(String body) {
         assertThat(body).isNotEmpty();
 
-        // verify json is valid
-        assertThat(JsonPath.parse(body)).isNotNull();
+        String sanitizedBody =  replaceDynamicParameters(body, true);
 
-        this.body = replaceDynamicParameters(body, true);
+        // verify json is valid
+        assertThat(JsonPath.parse(sanitizedBody)).isNotNull();
+
+        this.body = sanitizedBody;
     }
 
     void pushToQueue(String channelName) {
         MessageChannel channel = getChannelByName(channelName);
-        Assert.assertNotNull(channel);
+        assertThat(channel).isNotNull();
 
         channel.send(new GenericMessage<>(body, headers));
     }
 
     void readMessageFromQueue(String channelName, MessageChannelAction action) throws InterruptedException {
         MessageChannel channel = getChannelByName(channelName);
-        Assert.assertNotNull(channel);
+        assertThat(channel).isNotNull();
 
         messages = collector.forChannel(channel);
         assertThat(messages).isNotNull();
@@ -171,12 +171,9 @@ abstract class AbstractBddStepDefinition {
     void checkJsonPathDoesntExist(String jsonPath) {
         ReadContext ctx = readPayload();
 
-        if (ctx != null) {
-            assertThat(jsonPath).isNotEmpty();
-
-            assertThatThrownBy(() -> ctx.read(jsonPath))
-                    .isExactlyInstanceOf(PathNotFoundException.class);
-        }
+        assertThat(jsonPath).isNotEmpty();
+        assertThatThrownBy(() -> ctx.read(jsonPath))
+                .isExactlyInstanceOf(PathNotFoundException.class);
     }
 
     /**
@@ -288,17 +285,15 @@ abstract class AbstractBddStepDefinition {
      *            expected value
      */
     void checkScenarioVariable(String property, String value) {
-        Object scopeValue = null;
-        if (!CollectionUtils.isEmpty(scenarioScope.getJsonPaths())) {
-            scopeValue = scenarioScope.getJsonPaths().get(property);
-        }
+        Object scopeValue;
+        scopeValue = scenarioScope.getJsonPaths().get(property);
 
-        if (scopeValue == null && !CollectionUtils.isEmpty(scenarioScope.getHeaders())) {
+        if (scopeValue == null) {
             scopeValue = scenarioScope.getHeaders().get(property);
         }
 
-        Assert.assertNotNull(scopeValue);
-        Assert.assertEquals(scopeValue, value);
+        assertThat(scopeValue).isNotNull();
+        assertThat(scopeValue).isEqualTo(value);
     }
 
     /**
@@ -325,10 +320,6 @@ abstract class AbstractBddStepDefinition {
 
         ReadContext ctx = readPayload();
 
-        if (ctx == null) {
-            return null;
-        }
-
         Object pathValue = ctx.read(jsonPath);
 
         assertThat(pathValue).isNotNull();
@@ -342,10 +333,10 @@ abstract class AbstractBddStepDefinition {
         if (matcher.find()) {
             Object scopeValue = jsonPath ? scenarioScope.getJsonPaths().get(matcher.group(1))
                     : scenarioScope.getHeaders().get(matcher.group(1));
-            if (scopeValue != null) {
-                return replaceDynamicParameters(value.replace("`$"+ matcher.group(1) +"`",
-                        scopeValue.toString()), jsonPath);
-            }
+            assertThat(scopeValue).isNotNull();
+
+            return replaceDynamicParameters(value.replace("`$"+ matcher.group(1) +"`",
+                    scopeValue.toString()), jsonPath);
         }
         return value;
     }
