@@ -44,17 +44,17 @@ You can look at the [users.feature](src/test/resources/features/users.feature) f
 ## Share data between steps
 - You can use the following step to store data from a json response body to a shared context:
 ```gherkin
-And I store the value of body path $.id as idUser in scenario scope
+And I store the value of queue message path $.id as idUser in scenario scope
 ```
 - You can use the following step to store data from a response header to a shared context:
 ```gherkin
-And I store the value of response header Authorization as authHeader in scenario scope
+And I store the value of queue message header Authorization as authHeader in scenario scope
 ```
 - The result of the JsonPath `$.id` will be stored in the `idUser` variable.
 - To reuse this variable in another step, you can do:
 ```gherkin
-When I DELETE /users/`$idUser`
-And I set Authorization header to `$authHeader`
+When I PUSH to queue valid-user`$idUser`
+And I set X-USER-ID queue message header to `$idUser`
 ```
 
 
@@ -74,7 +74,7 @@ public class CucumberTest {
 
 }
 ````
-- Set the glue property to  `fr.redfroggy.bdd.glue` and add your package glue.
+- Set the glue property to  `fr.redfroggy.bdd.messaging.glue` and add your package glue.
 - Set your `features` folder property
 - Add your `.feature` files under your `features` folder
 - In your `.feature` files you should have access to all the steps defined in the [MessagingBddStepDefinition](src/main/java/fr/redfroggy/bdd/messaging/glue/MessagingBddStepDefinition.java) file.
