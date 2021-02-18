@@ -9,21 +9,21 @@ Feature: Users messaging tests
     And I set X_TOKEN_ID queue message header to 1234
     When I PUSH to queue input-valid-user
     And I POLL first message from queue output-valid-user
-    Then message body should be valid json
-    And message body should contain Wayne
-    And message body path $.id should exist
-    And message body path $.relatedTo should not exist
-    And message body path $.status should not be INVALID
-    And message body path $.status should be VALID
-    And message body path $.firstName should be Bruce
-    And message body path $.lastName should be Wayne
-    And message body path $.age should be 50
-    And message body is typed as array for path $.sessionIds
-    And message body is typed as array using path $.sessionIds with length 2
-    And message body path $.sessionIds should be ["43233333", "45654345"]
-    And message header contentType should not be application/xml
-    And message header X_TOKEN_ID should exist
-    And message header X_TOKEN_ID should be 1234
+    Then queue message body should be valid json
+    And queue message body should contain Wayne
+    And queue message body path $.id should exist
+    And queue message body path $.relatedTo should not exist
+    And queue message body path $.status should not be INVALID
+    And queue message body path $.status should be VALID
+    And queue message body path $.firstName should be Bruce
+    And queue message body path $.lastName should be Wayne
+    And queue message body path $.age should be 50
+    And queue message body is typed as array for path $.sessionIds
+    And queue message body is typed as array using path $.sessionIds with length 2
+    And queue message body path $.sessionIds should be ["43233333", "45654345"]
+    And queue message header contentType should not be application/xml
+    And queue message header X_TOKEN_ID should exist
+    And queue message header X_TOKEN_ID should be 1234
     And I store the value of queue message header X_TOKEN_ID as tokenId in scenario scope
     And I store the value of queue message path $.sessionIds.[0] as firstSessionId in scenario scope
 
@@ -33,8 +33,8 @@ Feature: Users messaging tests
     And I set  X_TOKEN_ID queue message header to `$tokenId`
     When I PUSH to queue input-valid-user
     And I POLL first message from queue output-valid-user
-    Then message body path $.status should be VALID
-    And message header X_TOKEN_ID should be 1234
+    Then queue message body path $.status should be VALID
+    And queue message header X_TOKEN_ID should be 1234
     When I POLL first message from queue output-valid-user
     And Queue should have 0 messages left
 
@@ -42,8 +42,8 @@ Feature: Users messaging tests
     Given I set queue message body to {"id": "2","firstName":"Bruce","lastName":"Wayne","age":"50"}
     When I PUSH to queue input-valid-user
     And I PEEK first message from queue output-valid-user
-    Then message body path $.status should be VALID
+    Then queue message body path $.status should be VALID
     When I PEEK first message from queue output-valid-user
     And Queue should have 1 messages left
-    Then message body path $.status should be VALID
-    And message header X_TOKEN_ID should not exist
+    Then queue message body path $.status should be VALID
+    And queue message header X_TOKEN_ID should not exist

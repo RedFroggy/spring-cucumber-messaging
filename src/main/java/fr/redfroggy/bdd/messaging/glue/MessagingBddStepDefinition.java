@@ -57,7 +57,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
     /**
      * Test that a given header exists
      */
-    @Then("^message header (.*) should exist$")
+    @Then("^queue message header (.*) should exist$")
     public void headerExists(String headerName) {
         this.checkHeaderExists(headerName, false);
     }
@@ -65,7 +65,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
     /**
      * Test that a given header does not exists
      */
-    @Then("^message header (.*) should not exist$")
+    @Then("^queue message header (.*) should not exist$")
     public void headerNotExists(String headerName) {
         this.checkHeaderExists(headerName, true);
     }
@@ -74,7 +74,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
      * Test if a given header value is matching the expected value
      *
      */
-    @Then("^message header (.*) should be (.*)$")
+    @Then("^queue message header (.*) should be (.*)$")
     public void headerEqual(String headerName, String headerValue) {
         this.checkHeaderHasValue(headerName, headerValue, false);
     }
@@ -82,7 +82,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
     /**
      * Test if a given header value is not matching the expected value
      */
-    @Then("^message header (.*) should not be (.*)$")
+    @Then("^queue message header (.*) should not be (.*)$")
     public void headerNotEqual(String headerName, String headerValue) {
         this.checkHeaderHasValue(headerName, headerValue, true);
     }
@@ -91,7 +91,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
      * Test if the response body is a valid json. The string response is parsed as a
      * JSON object ot check the integrity
      */
-    @Then("^message body should be valid json$")
+    @Then("^queue message body should be valid json$")
     public void bodyIsValid() throws IOException {
         this.checkJsonBody();
     }
@@ -99,7 +99,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
     /**
      * Test if the response body contains a given value
      */
-    @Then("^message body should contain (.*)$")
+    @Then("^queue message body should contain (.*)$")
     public void bodyContains(String bodyValue) {
         this.checkBodyContains(bodyValue);
     }
@@ -107,7 +107,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
     /**
      * Test the given json path query exists in the response body
      */
-    @Then("^message body path (.*) should exist$")
+    @Then("^queue message body path (.*) should exist$")
     public void bodyPathExists(String jsonPath) {
         this.checkJsonPathExists(jsonPath);
     }
@@ -115,7 +115,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
     /**
      * Test the given json path query doesn't exist in the response body
      */
-    @Then("^message body path (.*) should not exist$")
+    @Then("^queue message body path (.*) should not exist$")
     public void bodyPathDoesntExist(String jsonPath) {
         this.checkJsonPathDoesntExist(jsonPath);
     }
@@ -123,7 +123,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
     /**
      * Test the given json path exists in the response body and match the given value
      */
-    @Then("^message body path (.*) should be (.*)$")
+    @Then("^queue message body path (.*) should be (.*)$")
     public void bodyPathEqual(String jsonPath, String value) {
         this.checkJsonPath(jsonPath, value, false);
     }
@@ -131,7 +131,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
     /**
      * Test the given json path exists and does not match the given value
      */
-    @Then("^message body path (.*) should not be (.*)$")
+    @Then("^queue message body path (.*) should not be (.*)$")
     public void bodyPathNotEqual(String jsonPath, String value) {
         this.checkJsonPath(jsonPath, value, true);
     }
@@ -139,7 +139,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
     /**
      * Test if the json path exists in the response body and is array typed
      */
-    @Then("^message body is typed as array for path (.*)$")
+    @Then("^queue message body is typed as array for path (.*)$")
     public void bodyPathIsArray(String jsonPath) {
         this.checkJsonPathIsArray(jsonPath, -1);
     }
@@ -148,7 +148,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
      * Test if the json path exists in the response body, is array typed and as the
      * expected length
      */
-    @Then("^message body is typed as array using path (.*) with length (\\d+)$")
+    @Then("^queue message body is typed as array using path (.*) with length (\\d+)$")
     public void bodyPathIsArrayWithLength(String jsonPath, int length) {
         this.checkJsonPathIsArray(jsonPath, length);
     }
