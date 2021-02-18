@@ -1,5 +1,6 @@
 package fr.redfroggy.bdd.messaging.glue;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.redfroggy.bdd.messaging.scope.ScenarioScope;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -108,7 +109,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
      * Test the given json path query exists in the response body
      */
     @Then("^queue message body path (.*) should exist$")
-    public void bodyPathExists(String jsonPath) {
+    public void bodyPathExists(String jsonPath) throws JsonProcessingException {
         this.checkJsonPathExists(jsonPath);
     }
 
@@ -116,7 +117,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
      * Test the given json path query doesn't exist in the response body
      */
     @Then("^queue message body path (.*) should not exist$")
-    public void bodyPathDoesntExist(String jsonPath) {
+    public void bodyPathDoesntExist(String jsonPath) throws JsonProcessingException {
         this.checkJsonPathDoesntExist(jsonPath);
     }
 
@@ -124,7 +125,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
      * Test the given json path exists in the response body and match the given value
      */
     @Then("^queue message body path (.*) should be (.*)$")
-    public void bodyPathEqual(String jsonPath, String value) {
+    public void bodyPathEqual(String jsonPath, String value) throws JsonProcessingException {
         this.checkJsonPath(jsonPath, value, false);
     }
 
@@ -132,7 +133,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
      * Test the given json path exists and does not match the given value
      */
     @Then("^queue message body path (.*) should not be (.*)$")
-    public void bodyPathNotEqual(String jsonPath, String value) {
+    public void bodyPathNotEqual(String jsonPath, String value) throws JsonProcessingException {
         this.checkJsonPath(jsonPath, value, true);
     }
 
@@ -140,7 +141,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
      * Test if the json path exists in the response body and is array typed
      */
     @Then("^queue message body is typed as array for path (.*)$")
-    public void bodyPathIsArray(String jsonPath) {
+    public void bodyPathIsArray(String jsonPath) throws JsonProcessingException {
         this.checkJsonPathIsArray(jsonPath, -1);
     }
 
@@ -149,7 +150,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
      * expected length
      */
     @Then("^queue message body is typed as array using path (.*) with length (\\d+)$")
-    public void bodyPathIsArrayWithLength(String jsonPath, int length) {
+    public void bodyPathIsArrayWithLength(String jsonPath, int length) throws JsonProcessingException {
         this.checkJsonPathIsArray(jsonPath, length);
     }
 
@@ -173,7 +174,7 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
      * @see ScenarioScope
      */
     @Then("^I store the value of queue message path (.*) as (.*) in scenario scope$")
-    public void storeResponseJsonPath(String jsonPath, String jsonPathAlias) {
+    public void storeResponseJsonPath(String jsonPath, String jsonPathAlias) throws JsonProcessingException {
         this.storeJsonPath(jsonPath, jsonPathAlias);
     }
 

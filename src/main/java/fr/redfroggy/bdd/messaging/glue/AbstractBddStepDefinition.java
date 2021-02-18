@@ -1,6 +1,8 @@
 package fr.redfroggy.bdd.messaging.glue;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
@@ -145,8 +147,7 @@ abstract class AbstractBddStepDefinition {
         assertThat(body).isNotEmpty();
 
         // Check body json structure is valid
-        ((JacksonJsonProvider) jsonPathConfiguration.jsonProvider())
-                .getObjectMapper().readValue(body, Object.class);
+        objectMapper().readValue(body, Object.class);
     }
 
     /**
@@ -164,11 +165,11 @@ abstract class AbstractBddStepDefinition {
      *            json path query
      * @return value found using <code>jsonPath</code>
      */
-    Object checkJsonPathExists(String jsonPath) {
+    Object checkJsonPathExists(String jsonPath) throws JsonProcessingException {
         return getJsonPath(jsonPath);
     }
 
-    void checkJsonPathDoesntExist(String jsonPath) {
+    void checkJsonPathDoesntExist(String jsonPath) throws JsonProcessingException {
         ReadContext ctx = readPayload();
 
         assertThat(jsonPath).isNotEmpty();
@@ -186,7 +187,7 @@ abstract class AbstractBddStepDefinition {
      * @param isNot
      *            if true, test equality, inequality if false
      */
-    void checkJsonPath(String jsonPath, String jsonValueString, boolean isNot) {
+    void checkJsonPath(String jsonPath, String jsonValueString, boolean isNot) throws JsonProcessingException {
         Object pathValue = checkJsonPathExists(jsonPath);
         assertThat(String.valueOf(pathValue)).isNotEmpty();
 
@@ -231,7 +232,7 @@ abstract class AbstractBddStepDefinition {
      * @param length
      *            expected length (-1 to not control the size)
      */
-    void checkJsonPathIsArray(String jsonPath, int length) {
+    void checkJsonPathIsArray(String jsonPath, int length) throws JsonProcessingException {
         Object pathValue = getJsonPath(jsonPath);
         assertThat(pathValue).isInstanceOf(Collection.class);
         if (length != -1) {
@@ -267,7 +268,7 @@ abstract class AbstractBddStepDefinition {
      * @param jsonPathAlias
      *            new json path alias in the scenario scope
      */
-    void storeJsonPath(String jsonPath, String jsonPathAlias) {
+    void storeJsonPath(String jsonPath, String jsonPathAlias) throws JsonProcessingException {
         assertThat(jsonPath).isNotEmpty();
 
         assertThat(jsonPathAlias).isNotEmpty();
@@ -301,8 +302,14 @@ abstract class AbstractBddStepDefinition {
      *
      * @return ReadContext instance
      */
-    private ReadContext readPayload() {
-        ReadContext ctx = JsonPath.parse(String.valueOf(message.getPayload()), jsonPathConfiguration);
+    private ReadContext readPayload() throws JsonProcessingException {
+        ReadContext ctx;
+        Object payload = message.getPayload();
+        if (payload instanceof String) {
+            ctx = JsonPath.parse(String.valueOf(message.getPayload()), jsonPathConfiguration);
+        } else {
+            ctx = JsonPath.parse(objectMapper().writeValueAsString(message.getPayload()), jsonPathConfiguration);
+        }
         assertThat(ctx).isNotNull();
 
         return ctx;
@@ -314,7 +321,7 @@ abstract class AbstractBddStepDefinition {
      * @param jsonPath json path query
      * @return json path value
      */
-    protected Object getJsonPath(String jsonPath) {
+    protected Object getJsonPath(String jsonPath) throws JsonProcessingException {
 
         assertThat(jsonPath).isNotEmpty();
 
@@ -346,5 +353,10 @@ abstract class AbstractBddStepDefinition {
         return this.channels.stream()
                 .filter(directChannel -> channelName.equals(directChannel.toString()))
                 .findFirst().orElse(null);
+    }
+
+    private ObjectMapper objectMapper() {
+        return ((JacksonJsonProvider) jsonPathConfiguration.jsonProvider())
+                .getObjectMapper();
     }
 }
