@@ -46,6 +46,7 @@ abstract class AbstractBddStepDefinition {
     private final List<MessageChannel> channels;
 
     private final Configuration jsonPathConfiguration;
+    private final ObjectMapper objectMapper;
 
     private static final ScenarioScope scenarioScope = new ScenarioScope();
 
@@ -58,6 +59,8 @@ abstract class AbstractBddStepDefinition {
         JacksonJsonProvider jsonProvider = new JacksonJsonProvider();
         jsonProvider.getObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
         jsonPathConfiguration = Configuration.builder().jsonProvider(jsonProvider).build();
+
+        objectMapper = jsonProvider.getObjectMapper();
     }
 
     void setHeader(String name, String value) {
@@ -88,7 +91,7 @@ abstract class AbstractBddStepDefinition {
         channel.send(new GenericMessage<>(body, headers));
     }
 
-    void readMessageFromQueue(String channelName, MessageChannelAction action) throws InterruptedException {
+    void readMessageFromQueue(String channelName, MessageChannelAction action) {
         MessageChannel channel = getChannelByName(channelName);
         assertThat(channel).isNotNull();
 
@@ -147,7 +150,7 @@ abstract class AbstractBddStepDefinition {
         assertThat(body).isNotEmpty();
 
         // Check body json structure is valid
-        objectMapper().readValue(body, Object.class);
+        objectMapper.readValue(body, Object.class);
     }
 
     /**
@@ -308,7 +311,7 @@ abstract class AbstractBddStepDefinition {
         if (payload instanceof String) {
             ctx = JsonPath.parse(String.valueOf(message.getPayload()), jsonPathConfiguration);
         } else {
-            ctx = JsonPath.parse(objectMapper().writeValueAsString(message.getPayload()), jsonPathConfiguration);
+            ctx = JsonPath.parse(objectMapper.writeValueAsString(message.getPayload()), jsonPathConfiguration);
         }
         assertThat(ctx).isNotNull();
 
@@ -353,10 +356,5 @@ abstract class AbstractBddStepDefinition {
         return this.channels.stream()
                 .filter(directChannel -> channelName.equals(directChannel.toString()))
                 .findFirst().orElse(null);
-    }
-
-    private ObjectMapper objectMapper() {
-        return ((JacksonJsonProvider) jsonPathConfiguration.jsonProvider())
-                .getObjectMapper();
     }
 }
