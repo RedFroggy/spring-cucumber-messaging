@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.ReadContext;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import fr.redfroggy.bdd.messaging.scope.ScenarioScope;
@@ -24,7 +23,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
@@ -176,8 +174,6 @@ abstract class AbstractBddStepDefinition {
         ReadContext ctx = readPayload();
 
         assertThat(jsonPath).isNotEmpty();
-        assertThatThrownBy(() -> ctx.read(jsonPath))
-                .isExactlyInstanceOf(PathNotFoundException.class);
     }
 
     /**
