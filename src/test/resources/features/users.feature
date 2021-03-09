@@ -28,6 +28,14 @@ Feature: Users messaging tests
     And I store the value of queue message header X_TOKEN_ID as tokenId in scenario scope
     And I store the value of queue message path $.sessionIds.[0] as firstSessionId in scenario scope
 
+  Scenario: Should valid user using json file as body
+    Given I set queue message body with file fixtures/bruce-banner.user.json
+    When I PUSH to queue input-valid-user
+    And I POLL first message from queue output-valid-user
+    Then queue message body should be valid json
+    And queue message body path $.firstName should be Bruce
+    And queue message body path $.lastName should be Banner
+
   Scenario: Should not be able to read multiple times from queue when polling
     Given I set queue message body to {"id": "2","firstName":"Bruce","lastName":"Wayne","age":"50", "sessionIds": [`$firstSessionId`]}
     And queue value of scenario variable tokenId should be 1234
