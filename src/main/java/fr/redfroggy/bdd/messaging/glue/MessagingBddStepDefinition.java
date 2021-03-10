@@ -34,6 +34,16 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
     }
 
     /**
+     * Set the request body by reading a file
+     * A json string structure is accepted
+     * The body will be parsed to be sure the json is valid
+     */
+    @Given("^I set queue message body with file (.*)$")
+    public void setBodyWithFile(String filePath) throws IOException {
+        super.setBodyWithFile(filePath);
+    }
+
+    /**
      * Add a new header
      */
     @Given("^I set (.*) queue message header to (.*)$")

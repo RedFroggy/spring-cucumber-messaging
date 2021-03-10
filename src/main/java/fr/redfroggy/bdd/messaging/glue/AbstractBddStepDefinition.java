@@ -13,8 +13,10 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.StreamUtils;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -69,7 +71,7 @@ abstract class AbstractBddStepDefinition {
     }
 
     /**
-     * Set the messaging {@link #body}
+     * Set the queue message {@link #body}
      */
     void setBody(String body) {
         assertThat(body).isNotEmpty();
@@ -90,6 +92,13 @@ abstract class AbstractBddStepDefinition {
         assertThat(body).isNotNull();
 
         body = JsonPath.parse(body).set(jsonPath, value).jsonString();
+
+    }
+  
+    void setBodyWithFile(String filePath) throws IOException {
+        this.setBody(StreamUtils
+                .copyToString(getClass().getClassLoader()
+                        .getResourceAsStream(filePath), StandardCharsets.UTF_8));
     }
 
     void pushToQueue(String channelName) {
