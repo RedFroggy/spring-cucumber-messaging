@@ -85,8 +85,16 @@ abstract class AbstractBddStepDefinition {
     }
 
     /**
-     * Set the queue message {@link #body} by reading a file
+     * Edit the queue message body using a jsonPath and replace by the new value
      */
+    void setBodyPathWithValue(String jsonPath, String value) {
+        assertThat(jsonPath).isNotEmpty();
+        assertThat(body).isNotNull();
+
+        body = JsonPath.parse(body).set(jsonPath, value).jsonString();
+
+    }
+  
     void setBodyWithFile(String filePath) throws IOException {
         this.setBody(StreamUtils
                 .copyToString(getClass().getClassLoader()
