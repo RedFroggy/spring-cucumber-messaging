@@ -6,6 +6,7 @@ Feature: Users messaging tests
 
   Scenario: Should valid user
     Given I set queue message body to {"id": "2","firstName":"Bruce","lastName":"Wayne","age":"50", "sessionIds": ["43233333", "45654345"]}
+    And I set queue message body path $.age to 51
     And I set X_TOKEN_ID queue message header to 1234
     When I PUSH to queue input-valid-user
     And I POLL first message from queue output-valid-user
@@ -17,7 +18,7 @@ Feature: Users messaging tests
     And queue message body path $.status should be VALID
     And queue message body path $.firstName should be Bruce
     And queue message body path $.lastName should be Wayne
-    And queue message body path $.age should be 50
+    And queue message body path $.age should be 51
     And queue message body is typed as array for path $.sessionIds
     And queue message body is typed as array using path $.sessionIds with length 2
     And queue message body path $.sessionIds should be ["43233333", "45654345"]

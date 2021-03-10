@@ -82,6 +82,16 @@ abstract class AbstractBddStepDefinition {
         this.body = sanitizedBody;
     }
 
+    /**
+     * Edit the queue message body using a jsonPath and replace by the new value
+     */
+    void setBodyPathWithValue(String jsonPath, String value) {
+        assertThat(jsonPath).isNotEmpty();
+        assertThat(body).isNotNull();
+
+        body = JsonPath.parse(body).set(jsonPath, value).jsonString();
+    }
+
     void pushToQueue(String channelName) {
         MessageChannel channel = getChannelByName(channelName);
         assertThat(channel).isNotNull();

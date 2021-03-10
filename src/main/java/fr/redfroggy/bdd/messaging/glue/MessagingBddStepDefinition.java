@@ -2,6 +2,7 @@ package fr.redfroggy.bdd.messaging.glue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.redfroggy.bdd.messaging.scope.ScenarioScope;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -25,6 +26,11 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
     @Given("^I set queue message body to (.*)$")
     public void setBodyTo(String body) {
         this.setBody(body);
+    }
+
+    @And("^I set queue message body path (.*) to (.*)$")
+    public void setBodyWithJsonPath(String jsonPath, String value) {
+        this.setBodyPathWithValue(jsonPath, value);
     }
 
     /**
