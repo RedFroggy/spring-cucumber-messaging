@@ -21,6 +21,8 @@
 <br/>
 
 Made with Spring, [Cucumber](https://cucumber.io/) and [Gherkin](https://cucumber.io/docs/gherkin/) !
+<br/>
+To test your REST API with cucumber, gherkin please use this [library](https://github.com/RedFroggy/spring-cucumber-rest-api)
 
 ## Stack
 - Spring Boot / Spring cloud
@@ -171,6 +173,10 @@ I mock third party call (.*) (.*) with return code (.*) and body: (.*)
 I mock third party call (.*) (.*) with return code (.*), content type: (.*) and file: (.*)
   # Example: I mock third party call GET /public/characters/2 with return code 200, content type: application/json and file: fixtures/bruce_wayne_marvel_api.fixture.json
 ```
+
+It relies on [WireMock](http://wiremock.org) for stubbing api calls.
+By default, the wiremock port is `8888`, if you need to override it you need to change the
+`redfroggy.cucumber.restapi.wiremock.port` property in your project.
 
 ## Run local unit tests
 
