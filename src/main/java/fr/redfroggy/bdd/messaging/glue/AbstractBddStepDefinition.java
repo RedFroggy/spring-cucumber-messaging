@@ -3,19 +3,35 @@ package fr.redfroggy.bdd.messaging.glue;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.MappingBuilder;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.common.ConsoleNotifier;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.github.tomakehurst.wiremock.matching.EqualToPattern;
+import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.ReadContext;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import fr.redfroggy.bdd.messaging.scope.ScenarioScope;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.stream.test.binder.MessageCollector;
+import org.springframework.http.HttpHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StreamUtils;
+import wiremock.org.apache.http.NameValuePair;
+import wiremock.org.apache.http.client.utils.URLEncodedUtils;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
@@ -50,6 +66,11 @@ abstract class AbstractBddStepDefinition {
 
     private static final ScenarioScope scenarioScope = new ScenarioScope();
 
+    @Value("${redfroggy.cucumber.messaging.wiremock.port:8888}")
+    private int wireMockPort;
+
+    private WireMockRule wireMockServer;
+
     AbstractBddStepDefinition(MessageCollector collector, List<MessageChannel> channels) {
         this.collector = collector;
         this.channels = channels;
@@ -61,6 +82,18 @@ abstract class AbstractBddStepDefinition {
         jsonPathConfiguration = Configuration.builder().jsonProvider(jsonProvider).build();
 
         objectMapper = jsonProvider.getObjectMapper();
+    }
+
+    @PostConstruct
+    public void setUp() {
+        wireMockServer = new WireMockRule(WireMockConfiguration
+                .wireMockConfig().port(wireMockPort).notifier(new ConsoleNotifier(true)));
+        wireMockServer.start();
+    }
+
+    @PreDestroy
+    public void stopWireMockServer() {
+        wireMockServer.stop();
     }
 
     void setHeader(String name, String value) {
@@ -371,5 +404,33 @@ abstract class AbstractBddStepDefinition {
         return this.channels.stream()
                 .filter(directChannel -> channelName.equals(directChannel.toString()))
                 .findFirst().orElse(null);
+    }
+
+    protected void mockThirdPartyApiCall(String method, String resource, int status, String mediaType, String body) throws URISyntaxException {
+
+        String url = resource;
+        MappingBuilder mappingBuilder;
+
+        List<NameValuePair> params = URLEncodedUtils.parse(new URI(resource), StandardCharsets.UTF_8);
+        if (!CollectionUtils.isEmpty(params)) {
+
+            Map<String, StringValuePattern> queryParams = new HashMap<>();
+
+            params.forEach(nameValuePair -> queryParams.put(nameValuePair.getName(),
+                    new EqualToPattern(nameValuePair.getValue())));
+
+            url = resource.substring(0, resource.indexOf("?"));
+            mappingBuilder = WireMock.request(method, WireMock.urlPathMatching(url));
+            mappingBuilder.withQueryParams(queryParams);
+        } else {
+            mappingBuilder = WireMock.request(method, WireMock.urlPathMatching(url));
+        }
+
+        wireMockServer.stubFor(mappingBuilder
+                .willReturn(WireMock.aResponse()
+                        .withHeader(HttpHeaders.CONTENT_TYPE, mediaType)
+                        .withHeader(HttpHeaders.ACCEPT, mediaType)
+                        .withStatus(status)
+                        .withBody(body)));
     }
 }

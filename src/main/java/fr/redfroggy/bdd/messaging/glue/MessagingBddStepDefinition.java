@@ -7,9 +7,13 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.springframework.cloud.stream.test.binder.MessageCollector;
+import org.springframework.http.MediaType;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.util.StreamUtils;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
@@ -57,16 +61,16 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
     }
 
     @When("^I POLL first message from queue (.*)$")
-    public void pollFromQueue(String channelName) throws InterruptedException {
+    public void pollFromQueue(String channelName) {
         this.readMessageFromQueue(channelName, MessageChannelAction.POLL);
     }
 
     @When("^I PEEK first message from queue (.*)$")
-    public void peekFromQueue(String channelName) throws InterruptedException {
+    public void peekFromQueue(String channelName) {
         this.readMessageFromQueue(channelName, MessageChannelAction.PEEK);
     }
 
-    @Then("^Queue should have (.*) messages left$")
+    @Then("^queue should have (.*) messages left$")
     public void pollFromQueue(int expectedSize) {
         checkChannelHasSize(expectedSize);
     }
@@ -201,5 +205,17 @@ public class MessagingBddStepDefinition extends AbstractBddStepDefinition {
     @Then("^queue value of scenario variable (.*) should be (.*)$")
     public void scenarioVariableIsValid(String property, String value) {
         this.checkScenarioVariable(property, value);
+    }
+
+    @Given("^I mock third party call (.*) (.*) with return code (.*) and body: (.*)$")
+    public void mockThirdPartyApiCallWithJSON(String method, String resource, int status, String willReturnJson) throws URISyntaxException {
+        mockThirdPartyApiCall(method, resource, status, MediaType.APPLICATION_JSON_VALUE, willReturnJson);
+    }
+
+    @Given("^I mock third party call (.*) (.*) with return code (.*), content type: (.*) and file: (.*)$")
+    public void mockThirdPartyApiCallWithFileContent(String method, String resource, int status, String contentType, String filePath) throws IOException, URISyntaxException {
+        mockThirdPartyApiCall(method, resource, status, contentType, StreamUtils
+                .copyToString(getClass().getClassLoader()
+                        .getResourceAsStream(filePath), StandardCharsets.UTF_8));
     }
 }

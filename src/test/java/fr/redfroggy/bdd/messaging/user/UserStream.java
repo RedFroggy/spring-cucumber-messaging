@@ -5,6 +5,7 @@ import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.annotation.Input;
 import org.springframework.cloud.stream.annotation.Output;
 import org.springframework.cloud.stream.annotation.StreamListener;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.support.GenericMessage;
@@ -15,9 +16,11 @@ import java.util.Map;
 public class UserStream {
 
     private final UserStream.Process process;
+    private final UserDetailService userDetailService;
 
-    public UserStream(UserStream.Process process) {
+    public UserStream(UserStream.Process process, UserDetailService userDetailService) {
         this.process = process;
+        this.userDetailService = userDetailService;
     }
 
     @StreamListener(Process.INPUT_VALID_USER)
@@ -26,6 +29,13 @@ public class UserStream {
         boolean valid = user.getId() != null && user.getLastName() != null
                 && user.getFirstName() != null && user.getAge() > 0;
         user.setStatus(valid ? "VALID" : "INVALID");
+
+        ResponseEntity<UserDetailsDTO> responseUserDetails = userDetailService.getUserDetails(user.getId(), user.getSessionIds());
+        Assert.assertNotNull(responseUserDetails);
+        if (!responseUserDetails.getStatusCode().is2xxSuccessful()) {
+            throw new IllegalArgumentException("Invalid user details");
+        }
+        user.setDetails(responseUserDetails.getBody());
 
         // send result to output queue
         this.process.validUser().send(new GenericMessage<>(user, headers));
