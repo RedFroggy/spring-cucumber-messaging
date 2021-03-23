@@ -5,7 +5,7 @@ Feature: Users messaging tests
     Given I set contentType queue message header to application/json
 
   Scenario: Should valid user
-    When I mock third party call GET /public/characters/2?sessionId=43233333 with return code 200 and body: {"comicName": "IronMan", "city": "New York", "mainColor": ["red", "yellow"]}
+    When I mock third party call GET /public/characters/2?sessionId=43233333 with return code 200, content type: application/json and body: {"comicName": "IronMan", "city": "New York", "mainColor": ["red", "yellow"]}
     And I set queue message body to {"id": "2","firstName":"Bruce","lastName":"Wayne","age":"50", "sessionIds": ["43233333", "45654345"]}
     And I set queue message body path $.age to 51
     And I set X_TOKEN_ID queue message header to 1234
@@ -40,7 +40,7 @@ Feature: Users messaging tests
     And queue message body path $.lastName should be Banner
 
   Scenario: Should not be able to read multiple times from queue when polling
-    When I mock third party call GET /public/characters/2 with return code 200 and body: {"comicName": "IronMan", "city": "New York", "mainColor": ["red", "yellow"]}
+    When I mock third party call GET /public/characters/2 with return code 200, content type: application/json and body: {"comicName": "IronMan", "city": "New York", "mainColor": ["red", "yellow"]}
     And I set queue message body to {"id": "2","firstName":"Bruce","lastName":"Wayne","age":"50", "sessionIds": [`$firstSessionId`]}
     And queue value of scenario variable tokenId should be 1234
     And I set  X_TOKEN_ID queue message header to `$tokenId`
@@ -53,7 +53,7 @@ Feature: Users messaging tests
     And queue should have 0 messages left
 
   Scenario: Should be able to read multiple times from queue when peeking
-    When I mock third party call GET /public/characters/2 with return code 200 and body: {"comicName": "IronMan", "city": "New York", "mainColor": ["red", "yellow"]}
+    When I mock third party call GET /public/characters/2 with return code 200, content type: application/json and body: {"comicName": "IronMan", "city": "New York", "mainColor": ["red", "yellow"]}
     And I set queue message body to {"id": "2","firstName":"Bruce","lastName":"Wayne","age":"50"}
     And I PUSH to queue input-valid-user
     And I PEEK first message from queue output-valid-user
