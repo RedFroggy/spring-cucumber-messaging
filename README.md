@@ -168,8 +168,8 @@ public class DefaultStepDefinition {
 If you need to mock a third party API, you can use the following steps:
 
 ```gherkin
-I mock third party call (.*) (.*) with return code (.*) and body: (.*)
-  # Example: I mock third party call GET /public/characters/1?format=json with return code 200 and body: {"comicName": "IronMan", "city": "New York", "mainColor": ["red", "yellow"]}
+I mock third party call (.*) (.*) with return code (.*), content type: (.*) and body: (.*)
+  # Example: I mock third party call GET /public/characters/1?format=json with return code 200, content type: application/json and body: {"comicName": "IronMan", "city": "New York", "mainColor": ["red", "yellow"]}
 I mock third party call (.*) (.*) with return code (.*), content type: (.*) and file: (.*)
   # Example: I mock third party call GET /public/characters/2 with return code 200, content type: application/json and file: fixtures/bruce_wayne_marvel_api.fixture.json
 ```
