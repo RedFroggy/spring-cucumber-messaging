@@ -402,7 +402,7 @@ abstract class AbstractBddStepDefinition {
     private MessageChannel getChannelByName(String channelName) {
         assertThat(channelName).isNotNull();
         return this.channels.stream()
-                .filter(directChannel -> channelName.equals(directChannel.toString()))
+                .filter(directChannel -> directChannel.toString().contains(channelName))
                 .findFirst().orElse(null);
     }
 

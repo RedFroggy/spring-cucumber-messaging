@@ -65,7 +65,7 @@ public class AbstractBddStepDefinitionTest {
         Assert.assertEquals(stepDefinition.getJsonPath("$.id"), "1");
     }
 
-    class DefaultStepDefinition extends AbstractBddStepDefinition {
+    private static class DefaultStepDefinition extends AbstractBddStepDefinition {
 
         DefaultStepDefinition(MessageCollector collector, List<MessageChannel> channels) {
             super(collector, channels);
