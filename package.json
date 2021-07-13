@@ -2,14 +2,12 @@
   "engines": {
     "node": ">=10"
   },
+  "scripts": {
+    "prepare": "husky install"
+  },
   "devDependencies": {
     "@commitlint/cli": "12.1.4",
     "@commitlint/config-conventional": "12.1.4",
     "husky": "6.0.0"
-  },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-    }
   }
 }
